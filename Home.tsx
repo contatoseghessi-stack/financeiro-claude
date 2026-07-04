@@ -28,7 +28,8 @@ import { toast } from "sonner";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 
-const COLORS = ["#8b5cf6", "#10b981", "#f59e0b", "#ec4899", "#06b6d4", "#ef4444", "#6366f1"];
+// Brand-first chart palette: laranja Eugê leads, then supporting hues
+const COLORS = ["#EE770E", "#10b981", "#8b5cf6", "#06b6d4", "#f59e0b", "#ec4899", "#6366f1"];
 
 const MONTH_NAMES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 const MONTH_FULL = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -38,8 +39,11 @@ function formatCurrency(value: number) {
 }
 
 function formatCompact(value: number) {
-  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
-  return value.toFixed(0);
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1000) return `${sign}${(abs / 1000).toFixed(1)}k`;
+  return `${sign}${abs.toFixed(0)}`;
 }
 
 export default function Home() {
@@ -406,18 +410,38 @@ export default function Home() {
 
   // For future months, use real data from dashboard (recurring transactions are already generated in DB)
   // Fall back to projections only if dashboard has no data
-  const displayIncome = isFutureMonth 
-    ? (totalIncome > 0 ? totalIncome : currentMonthProjections.income) 
+  const displayIncome = isFutureMonth
+    ? (totalIncome > 0 ? totalIncome : currentMonthProjections.income)
     : totalIncome;
-  const displayExpense = isFutureMonth ? totalExpense : totalExpense;
+  const displayExpense = totalExpense;
   const displayBalance = displayIncome - displayExpense;
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex items-center justify-between">
+          <div className="h-10 w-56 rounded-lg bg-muted animate-pulse" />
+          <div className="h-9 w-36 rounded-lg bg-muted animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           {[1, 2, 3, 4].map(i => (
-            <Card key={i} className="animate-pulse"><CardContent className="p-6"><div className="h-16 bg-muted rounded" /></CardContent></Card>
+            <Card key={i} className="border-border/50">
+              <CardContent className="p-3 sm:p-5">
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-3 w-16 bg-muted rounded" />
+                  <div className="h-7 w-28 bg-muted rounded" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[1, 2].map(i => (
+            <Card key={i} className="border-border/50">
+              <CardContent className="p-6">
+                <div className="h-[250px] rounded bg-muted/50 animate-pulse" />
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
@@ -480,11 +504,11 @@ export default function Home() {
               </div>
               <div>
                 <Label>Descrição</Label>
-                <Input placeholder="Ex: Mercado, Cliente X..." value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                <Input placeholder="Ex: Mercado, Cliente X..." autoFocus required value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
               </div>
               <div>
                 <Label>Valor (R$)</Label>
-                <Input placeholder="0,00" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+                <Input placeholder="0,00" inputMode="decimal" required value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -553,9 +577,9 @@ export default function Home() {
                 </Button>
               </div>
               <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm flex-wrap items-center">
-                <span className="text-emerald-400">{formatCurrency(yearTotals.income)}</span>
-                <span className="text-red-400">{formatCurrency(yearTotals.expense)}</span>
-                <span className={yearTotals.income - yearTotals.expense >= 0 ? "text-emerald-400" : "text-red-400"}>
+                <span className="text-success">{formatCurrency(yearTotals.income)}</span>
+                <span className="text-danger">{formatCurrency(yearTotals.expense)}</span>
+                <span className={yearTotals.income - yearTotals.expense >= 0 ? "text-success" : "text-danger"}>
                   = {formatCurrency(yearTotals.income - yearTotals.expense)}
                 </span>
                 <Button
@@ -573,10 +597,10 @@ export default function Home() {
             </div>
             <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Valores reais
+                <span className="h-2 w-2 rounded-full bg-success" /> Valores reais
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500/40 border border-dashed border-emerald-500" /> Projeção (recorrências + jobs)
+                <span className="h-2 w-2 rounded-full bg-success/40 border border-dashed border-success" /> Projeção (recorrências + jobs)
               </span>
             </div>
           </CardHeader>
@@ -610,17 +634,17 @@ export default function Home() {
                     </p>
                     {hasReal || hasProjection ? (
                       <div className="space-y-0.5">
-                        <p className={`text-[10px] font-medium leading-tight ${m.isFuture ? "text-emerald-400/60" : "text-emerald-400"}`}>
+                        <p className={`text-[10px] font-medium leading-tight ${m.isFuture ? "text-success/60" : "text-success"}`}>
                           +{formatCompact(showIncome)}
                         </p>
                         {showExpense > 0 && (
-                          <p className={`text-[10px] font-medium leading-tight text-red-400`}>
+                          <p className={`text-[10px] font-medium leading-tight text-danger`}>
                             -{formatCompact(showExpense)}
                           </p>
                         )}
-                        <div className={`h-0.5 rounded-full mt-1 ${m.balance >= 0 ? "bg-emerald-500/40" : "bg-red-500/40"}`}>
+                        <div className={`h-0.5 rounded-full mt-1 ${m.balance >= 0 ? "bg-success/40" : "bg-danger/40"}`}>
                           <div
-                            className={`h-full rounded-full ${m.balance >= 0 ? "bg-emerald-500" : "bg-red-500"} ${m.isFuture ? "opacity-50" : ""}`}
+                            className={`h-full rounded-full ${m.balance >= 0 ? "bg-success" : "bg-danger"} ${m.isFuture ? "opacity-50" : ""}`}
                             style={{ width: `${Math.min(100, Math.abs(m.balance) / Math.max(showIncome, showExpense, 1) * 100)}%` }}
                           />
                         </div>
@@ -668,22 +692,22 @@ export default function Home() {
           <SheetHeader className="p-6 pb-4 border-b border-border/50">
             <SheetTitle className="flex items-center gap-2">
               {detailSheet === "income" ? (
-                <><div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center"><ArrowUpRight className="h-4 w-4 text-emerald-400" /></div> Receitas de {MONTH_FULL[selectedMonth]}</>
+                <><div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center"><ArrowUpRight className="h-4 w-4 text-success" /></div> Receitas de {MONTH_FULL[selectedMonth]}</>
               ) : (
-                <><div className="h-8 w-8 rounded-lg bg-red-500/10 flex items-center justify-center"><ArrowDownRight className="h-4 w-4 text-red-400" /></div> Despesas de {MONTH_FULL[selectedMonth]}</>
+                <><div className="h-8 w-8 rounded-lg bg-danger/10 flex items-center justify-center"><ArrowDownRight className="h-4 w-4 text-danger" /></div> Despesas de {MONTH_FULL[selectedMonth]}</>
               )}
             </SheetTitle>
             <p className="text-sm text-muted-foreground">
               {detailTx?.items ? `${detailTx.items.length} transaç${detailTx.items.length !== 1 ? "ões" : "ão"}` : "Carregando..."}
               {detailTx?.items && detailTx.items.length > 0 && (
-                <> — Total: <span className={detailSheet === "income" ? "text-emerald-400 font-semibold" : "text-red-400 font-semibold"}>
+                <> — Total: <span className={detailSheet === "income" ? "text-success font-semibold" : "text-danger font-semibold"}>
                   {formatCurrency(detailTx.items.filter(tx => (tx as any).source !== "job_pending").reduce((sum, tx) => sum + parseFloat(tx.amount), 0))}
                 </span></>
               )}
             </p>
             {detailTx?.items && detailTx.items.filter(tx => (tx as any).source === "job_pending").length > 0 && (
               <p className="text-sm mt-1">
-                <span className="text-amber-400 font-medium">
+                <span className="text-warning font-medium">
                   {detailSheet === "income" ? "Previsto a receber" : "Previsto a pagar"}: {formatCurrency(detailTx.items.filter(tx => (tx as any).source === "job_pending").reduce((sum, tx) => sum + parseFloat(tx.amount), 0))}
                 </span>
               </p>
@@ -742,20 +766,20 @@ export default function Home() {
                   const isJobPending = (tx as any).source === "job_pending";
 
                   return (
-                    <div key={tx.id} className={`flex items-center justify-between p-3 rounded-lg transition-colors group ${isJobPending ? "bg-amber-500/5 border border-amber-500/20" : "bg-secondary/50 hover:bg-secondary/80"}`}>
+                    <div key={tx.id} className={`flex items-center justify-between p-3 rounded-lg transition-colors group ${isJobPending ? "bg-warning/5 border border-warning/20" : "bg-secondary/50 hover:bg-secondary/80"}`}>
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${isJobPending ? "bg-amber-500/10" : tx.type === "income" ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
-                          {isJob ? <Briefcase className={`h-4 w-4 ${isJobPending ? "text-amber-400" : tx.type === "income" ? "text-emerald-400" : "text-red-400"}`} /> : tx.type === "income" ? <ArrowUpRight className="h-4 w-4 text-emerald-400" /> : <ArrowDownRight className="h-4 w-4 text-red-400" />}
+                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${isJobPending ? "bg-warning/10" : tx.type === "income" ? "bg-success/10" : "bg-danger/10"}`}>
+                          {isJob ? <Briefcase className={`h-4 w-4 ${isJobPending ? "text-warning" : tx.type === "income" ? "text-success" : "text-danger"}`} /> : tx.type === "income" ? <ArrowUpRight className="h-4 w-4 text-success" /> : <ArrowDownRight className="h-4 w-4 text-danger" />}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{(tx.description.split(" - ").slice(1).join(" - ") || tx.description).replace(/\s*\(recorrente\)/gi, "")}</p>
                           <div className="flex gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap items-center">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${tx.scope === "pj" ? "bg-violet-500/10 text-violet-400" : "bg-amber-500/10 text-amber-400"}`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${tx.scope === "pj" ? "bg-violet-500/10 text-violet-600 dark:text-violet-400" : "bg-warning/10 text-warning"}`}>
                               {tx.scope === "pj" ? "PJ" : "PF"}
                             </span>
-                            {isRecurring && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/10 text-violet-400 flex items-center gap-0.5"><Repeat className="h-2.5 w-2.5" />mensal</span>}
-                            {isInstallment && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400">parcela</span>}
-                            {isJobPending && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-400">pendente</span>}
+                            {isRecurring && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center gap-0.5"><Repeat className="h-2.5 w-2.5" />mensal</span>}
+                            {isInstallment && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-info/10 text-info">parcela</span>}
+                            {isJobPending && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning">pendente</span>}
                             {cardName && <span>{cardName}</span>}
                             {catName && <span>{catName}</span>}
                             <span>{new Date(tx.date).toLocaleDateString("pt-BR")}</span>
@@ -763,14 +787,14 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-                        <p className={`text-sm font-semibold whitespace-nowrap ${isJobPending ? "text-amber-400" : tx.type === "income" ? "text-emerald-400" : "text-red-400"}`}>
+                        <p className={`text-sm font-semibold whitespace-nowrap ${isJobPending ? "text-warning" : tx.type === "income" ? "text-success" : "text-danger"}`}>
                           {tx.type === "income" ? "+" : "-"}{formatCurrency(parseFloat(tx.amount))}
                         </p>
                         {isJobPending && (tx as any).jobPaymentId && tx.type === "income" ? (
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 whitespace-nowrap"
+                            className="text-xs h-7 border-success/50 text-success hover:bg-success/10 whitespace-nowrap"
                             onClick={() => confirmReceiptMutation.mutate({ id: (tx as any).jobPaymentId, jobId: (tx as any).jobId })}
                           >
                             Confirmar
@@ -779,7 +803,7 @@ export default function Home() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 border-amber-500/50 text-amber-400 hover:bg-amber-500/10 whitespace-nowrap"
+                            className="text-xs h-7 border-warning/50 text-warning hover:bg-warning/10 whitespace-nowrap"
                             onClick={() => confirmPaymentMutation.mutate({ id: (tx as any).jobCostId })}
                           >
                             Pagar
@@ -799,7 +823,7 @@ export default function Home() {
                                 <Pencil className="h-4 w-4 mr-2" /> Editar
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-red-400" onClick={() => {
+                              <DropdownMenuItem className="text-danger" onClick={() => {
                                 setDeleteTx(tx as any);
                                 setDeleteScope("single");
                               }}>
@@ -822,19 +846,19 @@ export default function Home() {
                       const pendingCount = items.filter(tx => (tx as any).source === "job_pending").length;
                       
                       return (
-                        <div key={jobName} className="border border-cyan-500/20 rounded-lg overflow-hidden">
+                        <div key={jobName} className="border border-info/20 rounded-lg overflow-hidden">
                           <button
                             onClick={() => toggleJobExpand(jobName)}
-                            className="w-full flex items-center justify-between p-3 bg-cyan-500/5 hover:bg-cyan-500/10 transition-colors"
+                            className="w-full flex items-center justify-between p-3 bg-info/5 hover:bg-info/10 transition-colors"
                           >
                             <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <ChevronRight className={`h-4 w-4 text-cyan-400 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                              <ChevronRight className={`h-4 w-4 text-info transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-cyan-300 truncate">{jobName}</p>
+                                <p className="text-sm font-semibold text-info truncate">{jobName}</p>
                                 <p className="text-xs text-muted-foreground">{items.length} item{items.length !== 1 ? "s" : ""} {pendingCount > 0 ? `(${pendingCount} pendente${pendingCount !== 1 ? "s" : ""})`  : ""}</p>
                               </div>
                             </div>
-                            <p className="text-sm font-semibold text-cyan-400 whitespace-nowrap">{detailSheet === "income" ? "+" : "-"}{formatCurrency(totalAmount)}</p>
+                            <p className="text-sm font-semibold text-info whitespace-nowrap">{detailSheet === "income" ? "+" : "-"}{formatCurrency(totalAmount)}</p>
                           </button>
                           {isExpanded && (
                             <div className="space-y-2 p-2 bg-secondary/20">
@@ -842,7 +866,7 @@ export default function Home() {
                               {pendingCount > 0 && (
                                 <Button
                                   size="sm"
-                                  className="w-full text-xs h-8 bg-cyan-600 hover:bg-cyan-700 text-white"
+                                  className="w-full text-xs h-8 bg-info hover:bg-info/90 text-info-foreground"
                                   onClick={() => {
                                     items.filter(tx => (tx as any).source === "job_pending").forEach(tx => {
                                       if ((tx as any).jobPaymentId && detailSheet === "income") {
@@ -915,16 +939,16 @@ export default function Home() {
                             className="w-full flex items-center justify-between p-3 bg-violet-500/5 hover:bg-violet-500/10 transition-colors"
                           >
                             <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <ChevronRight className={`h-4 w-4 text-violet-400 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                              <ChevronRight className={`h-4 w-4 text-violet-600 dark:text-violet-400 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                               <div className="flex items-center gap-2 min-w-0">
-                                <Repeat className="h-4 w-4 text-violet-400 shrink-0" />
+                                <Repeat className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
                                 <div className="min-w-0">
-                                  <p className="text-sm font-semibold text-violet-300">{detailSheet === "income" ? "Receitas Fixas" : "Despesas Fixas"}</p>
+                                  <p className="text-sm font-semibold text-violet-700 dark:text-violet-300">{detailSheet === "income" ? "Receitas Fixas" : "Despesas Fixas"}</p>
                                   <p className="text-xs text-muted-foreground">{recurringItems.length} {detailSheet === "income" ? "receita" : "despesa"}{recurringItems.length !== 1 ? "s" : ""} mensal{recurringItems.length !== 1 ? "is" : ""}</p>
                                 </div>
                               </div>
                             </div>
-                            <p className={`text-sm font-semibold whitespace-nowrap ${detailSheet === "income" ? "text-emerald-400" : "text-violet-400"}`}>
+                            <p className={`text-sm font-semibold whitespace-nowrap ${detailSheet === "income" ? "text-success" : "text-violet-600 dark:text-violet-400"}`}>
                               {detailSheet === "income" ? "+" : "-"}{formatCurrency(totalRecurring)}
                             </p>
                           </button>
@@ -969,13 +993,13 @@ export default function Home() {
             }
           }} className="space-y-4">
             {editTx?.source === "recurring" && (
-              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                <p className="text-sm text-purple-300">Esta é uma transação recorrente. A alteração será aplicada em <strong>todos os meses</strong> (passados e futuros).</p>
+              <div className="p-3 rounded-lg bg-info/10 border border-info/20">
+                <p className="text-sm text-foreground/90">Esta é uma transação recorrente. A alteração será aplicada em <strong>todos os meses</strong> (passados e futuros).</p>
               </div>
             )}
             {editTx?.installmentGroupId && (
-              <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                <p className="text-sm text-orange-300">Esta é uma parcela. A alteração será aplicada nas <strong>parcelas futuras</strong>.</p>
+              <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
+                <p className="text-sm text-foreground/90">Esta é uma parcela. A alteração será aplicada nas <strong>parcelas futuras</strong>.</p>
               </div>
             )}
             <div>
@@ -984,7 +1008,7 @@ export default function Home() {
             </div>
             <div>
               <Label>Valor (R$)</Label>
-              <Input value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
+              <Input inputMode="decimal" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} />
             </div>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setEditTx(null)}>Cancelar</Button>
@@ -1005,11 +1029,11 @@ export default function Home() {
                   <strong>"{deleteTx.description}"</strong> é uma transação recorrente.
                   <div className="mt-3 space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="deleteScope" checked={deleteScope === "single"} onChange={() => setDeleteScope("single")} className="accent-red-500" />
+                      <input type="radio" name="deleteScope" checked={deleteScope === "single"} onChange={() => setDeleteScope("single")} className="accent-danger" />
                       <span>Excluir apenas esta transação</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="deleteScope" checked={deleteScope === "all"} onChange={() => setDeleteScope("all")} className="accent-red-500" />
+                      <input type="radio" name="deleteScope" checked={deleteScope === "all"} onChange={() => setDeleteScope("all")} className="accent-danger" />
                       <span>Excluir a recorrência e <strong>todas</strong> as transações geradas</span>
                     </label>
                   </div>
@@ -1019,15 +1043,15 @@ export default function Home() {
                   <strong>"{deleteTx.description}"</strong> é uma parcela.
                   <div className="mt-3 space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="deleteScope" checked={deleteScope === "single"} onChange={() => setDeleteScope("single")} className="accent-red-500" />
+                      <input type="radio" name="deleteScope" checked={deleteScope === "single"} onChange={() => setDeleteScope("single")} className="accent-danger" />
                       <span>Excluir apenas esta parcela</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="deleteScope" checked={deleteScope === "all_future"} onChange={() => setDeleteScope("all_future")} className="accent-red-500" />
+                      <input type="radio" name="deleteScope" checked={deleteScope === "all_future"} onChange={() => setDeleteScope("all_future")} className="accent-danger" />
                       <span>Excluir todas as parcelas <strong>futuras</strong></span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="deleteScope" checked={deleteScope === "all"} onChange={() => setDeleteScope("all")} className="accent-red-500" />
+                      <input type="radio" name="deleteScope" checked={deleteScope === "all"} onChange={() => setDeleteScope("all")} className="accent-danger" />
                       <span>Excluir <strong>todas</strong> as parcelas do grupo</span>
                     </label>
                   </div>
@@ -1039,7 +1063,7 @@ export default function Home() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => {
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => {
               if (!deleteTx) return;
               const isRecurring = deleteTx.source === "recurring";
               const isInstallment = !!deleteTx.installmentGroupId;
@@ -1064,7 +1088,7 @@ export default function Home() {
       {/* Cards de resumo */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card
-          className={`border-border/50 bg-card/80 backdrop-blur cursor-pointer hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5 transition-all animate-in fade-in-0 slide-in-from-bottom-3 duration-300 ${isFutureMonth ? "border-dashed" : ""}`}
+          className={`border-border/50 bg-card/80 backdrop-blur cursor-pointer hover:border-success/30 hover:shadow-lg hover:shadow-success/5 transition-all animate-in fade-in-0 slide-in-from-bottom-3 duration-300 ${isFutureMonth ? "border-dashed" : ""}`}
           onClick={() => setDetailSheet("income")}
         >
           <CardContent className="p-3 sm:p-5">
@@ -1073,19 +1097,19 @@ export default function Home() {
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Receitas {isFutureMonth && <span className="text-primary/60">(prev.)</span>}
                 </p>
-                <p className={`text-base sm:text-2xl font-bold mt-0.5 sm:mt-1 ${isFutureMonth ? "text-emerald-400/70" : "text-emerald-400"}`}>
+                <p className={`text-base sm:text-2xl font-bold mt-0.5 sm:mt-1 ${isFutureMonth ? "text-success/70" : "text-success"}`}>
                   {formatCurrency(displayIncome)}
                 </p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Clique para ver detalhes</p>
               </div>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0">
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
               </div>
             </div>
           </CardContent>
         </Card>
         <Card
-          className={`border-border/50 bg-card/80 backdrop-blur cursor-pointer hover:border-red-500/30 hover:shadow-lg hover:shadow-red-500/5 transition-all animate-in fade-in-0 slide-in-from-bottom-3 duration-300 delay-75 ${isFutureMonth ? "border-dashed" : ""}`}
+          className={`border-border/50 bg-card/80 backdrop-blur cursor-pointer hover:border-danger/30 hover:shadow-lg hover:shadow-danger/5 transition-all animate-in fade-in-0 slide-in-from-bottom-3 duration-300 delay-75 ${isFutureMonth ? "border-dashed" : ""}`}
           onClick={() => setDetailSheet("expense")}
         >
           <CardContent className="p-3 sm:p-5">
@@ -1094,13 +1118,13 @@ export default function Home() {
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Despesas {isFutureMonth && <span className="text-primary/60">(prev.)</span>}
                 </p>
-                <p className={`text-base sm:text-2xl font-bold mt-0.5 sm:mt-1 ${isFutureMonth ? "text-red-400/70" : "text-red-400"}`}>
+                <p className={`text-base sm:text-2xl font-bold mt-0.5 sm:mt-1 ${isFutureMonth ? "text-danger/70" : "text-danger"}`}>
                   {formatCurrency(displayExpense)}
                 </p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 hidden sm:block">Clique para ver detalhes</p>
               </div>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
-                <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-danger/10 flex items-center justify-center shrink-0">
+                <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-danger" />
               </div>
             </div>
           </CardContent>
@@ -1112,7 +1136,7 @@ export default function Home() {
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Saldo {isFutureMonth && <span className="text-primary/60">(prev.)</span>}
                 </p>
-                <p className={`text-base sm:text-2xl font-bold mt-0.5 sm:mt-1 ${displayBalance >= 0 ? (isFutureMonth ? "text-emerald-400/70" : "text-emerald-400") : (isFutureMonth ? "text-red-400/70" : "text-red-400")}`}>
+                <p className={`text-base sm:text-2xl font-bold mt-0.5 sm:mt-1 ${displayBalance >= 0 ? (isFutureMonth ? "text-success/70" : "text-success") : (isFutureMonth ? "text-danger/70" : "text-danger")}`}>
                   {formatCurrency(displayBalance)}
                 </p>
               </div>
@@ -1133,7 +1157,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
-                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-violet-400" />
+                <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400" />
               </div>
             </div>
           </CardContent>
@@ -1150,12 +1174,12 @@ export default function Home() {
             {trendData.length > 0 ? (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="month" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#1e1b4b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px" }}
-                    labelStyle={{ color: "#e5e7eb" }}
+                    contentStyle={{ backgroundColor: "var(--popover)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--popover-foreground)" }}
+                    labelStyle={{ color: "var(--popover-foreground)" }}
                     formatter={(value: number) => [formatCurrency(value)]}
                   />
                   <Bar dataKey="receitas" fill="#10b981" radius={[4, 4, 0, 0]} name="Receitas" />
@@ -1183,10 +1207,10 @@ export default function Home() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#1e1b4b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px" }}
+                    contentStyle={{ backgroundColor: "var(--popover)", border: "1px solid var(--border)", borderRadius: "8px", color: "var(--popover-foreground)" }}
                     formatter={(value: number) => [formatCurrency(value)]}
                   />
-                  <Legend formatter={(value) => <span style={{ color: "#d1d5db", fontSize: 12 }}>{value}</span>} />
+                  <Legend formatter={(value) => <span style={{ color: "var(--muted-foreground)", fontSize: 12 }}>{value}</span>} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -1201,7 +1225,7 @@ export default function Home() {
       {/* Jobs do Mês */}
       {jobsSummary && (jobsSummary.activeJobs > 0 || !isFutureMonth) && (
         <Card
-          className="border-border/50 bg-card/80 backdrop-blur cursor-pointer hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
+          className="border-border/50 bg-card/80 backdrop-blur cursor-pointer hover:border-info/30 hover:shadow-lg hover:shadow-info/5 transition-all animate-in fade-in-0 slide-in-from-bottom-2 duration-300"
           onClick={() => setLocation("/jobs")}
         >
           <CardContent className="p-3 sm:p-5">
@@ -1210,20 +1234,20 @@ export default function Home() {
                 <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Jobs do Mês</p>
                 <div className="flex items-center gap-3 sm:gap-4 mt-1.5 sm:mt-2">
                   <div>
-                    <p className="text-lg sm:text-2xl font-bold text-blue-400">{jobsSummary.activeJobs}</p>
+                    <p className="text-lg sm:text-2xl font-bold text-info">{jobsSummary.activeJobs}</p>
                     <p className="text-[9px] sm:text-[10px] text-muted-foreground">job{jobsSummary.activeJobs !== 1 ? "s" : ""} ativo{jobsSummary.activeJobs !== 1 ? "s" : ""}</p>
                   </div>
                   <div className="h-8 sm:h-10 border-l border-border/50" />
                   <div>
-                    <p className={`text-lg sm:text-2xl font-bold ${jobsSummary.totalProfit >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    <p className={`text-lg sm:text-2xl font-bold ${jobsSummary.totalProfit >= 0 ? "text-success" : "text-danger"}`}>
                       {formatCurrency(jobsSummary.totalProfit)}
                     </p>
                     <p className="text-[9px] sm:text-[10px] text-muted-foreground">lucro total</p>
                   </div>
                 </div>
               </div>
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-info/10 flex items-center justify-center shrink-0">
+                <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-info" />
               </div>
             </div>
           </CardContent>
@@ -1242,20 +1266,20 @@ export default function Home() {
           <CardContent>
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <div className="text-center">
-                <p className="text-base sm:text-2xl font-bold text-emerald-400">{formatCurrency(weeklySummary.income)}</p>
+                <p className="text-base sm:text-2xl font-bold text-success">{formatCurrency(weeklySummary.income)}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Receitas</p>
               </div>
               <div className="text-center">
-                <p className="text-base sm:text-2xl font-bold text-red-400">{formatCurrency(weeklySummary.expense)}</p>
+                <p className="text-base sm:text-2xl font-bold text-danger">{formatCurrency(weeklySummary.expense)}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Despesas</p>
               </div>
               <div className="text-center">
-                <p className="text-base sm:text-2xl font-bold text-blue-400">{weeklySummary.jobsDelivered}</p>
+                <p className="text-base sm:text-2xl font-bold text-info">{weeklySummary.jobsDelivered}</p>
                 <p className="text-[9px] sm:text-[10px] text-muted-foreground">Jobs entregues</p>
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-border/50">
-              <p className={`text-sm font-medium text-center ${weeklySummary.income - weeklySummary.expense >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              <p className={`text-sm font-medium text-center ${weeklySummary.income - weeklySummary.expense >= 0 ? 'text-success' : 'text-danger'}`}>
                 Saldo: {formatCurrency(weeklySummary.income - weeklySummary.expense)}
               </p>
             </div>
@@ -1279,11 +1303,11 @@ export default function Home() {
                     <div key={goal.id} className="space-y-1">
                       <div className="flex justify-between text-xs">
                         <span className="font-medium truncate">{goal.title}</span>
-                        <span className={isAchieved ? 'text-emerald-400 font-bold' : 'text-muted-foreground'}>{progress}%</span>
+                        <span className={isAchieved ? 'text-success font-bold' : 'text-muted-foreground'}>{progress}%</span>
                       </div>
                       <div className="h-2 rounded-full bg-secondary/80 overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-all ${isAchieved ? 'bg-emerald-500' : progress > 50 ? 'bg-amber-500' : 'bg-blue-500'}`}
+                          className={`h-full rounded-full transition-all ${isAchieved ? 'bg-success' : progress > 50 ? 'bg-warning' : 'bg-info'}`}
                           style={{ width: `${Math.min(progress, 100)}%` }}
                         />
                       </div>
@@ -1314,17 +1338,17 @@ export default function Home() {
           <CardContent>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={yearComparison}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" tick={{ fill: '#9ca3af', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1e1b4b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                  labelStyle={{ color: '#e5e7eb' }}
+                  contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--popover-foreground)' }}
+                  labelStyle={{ color: 'var(--popover-foreground)' }}
                   formatter={(value: number, name: string) => [formatCurrency(value), name]}
                 />
                 <Bar dataKey="prevIncome" fill="#10b98166" radius={[2, 2, 0, 0]} name={`Receita ${selectedYear - 1}`} />
                 <Bar dataKey="currentIncome" fill="#10b981" radius={[2, 2, 0, 0]} name={`Receita ${selectedYear}`} />
-                <Legend formatter={(value) => <span style={{ color: '#d1d5db', fontSize: 11 }}>{value}</span>} />
+                <Legend formatter={(value) => <span style={{ color: 'var(--muted-foreground)', fontSize: 11 }}>{value}</span>} />
               </BarChart>
             </ResponsiveContainer>
             {/* Growth summary */}
@@ -1347,13 +1371,13 @@ export default function Home() {
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">Crescimento</p>
-                      <p className={`text-sm font-bold ${growth >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <p className={`text-sm font-bold ${growth >= 0 ? 'text-success' : 'text-danger'}`}>
                         {growth >= 0 ? '+' : ''}{growth.toFixed(1)}%
                       </p>
                     </div>
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">Despesas {selectedYear}</p>
-                      <p className="text-sm font-bold text-red-400">{formatCurrency(totalCurrentExp)}</p>
+                      <p className="text-sm font-bold text-danger">{formatCurrency(totalCurrentExp)}</p>
                     </div>
                   </>
                 );
@@ -1373,8 +1397,8 @@ export default function Home() {
             {recentTx?.items.map(tx => (
               <div key={tx.id} className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-secondary/50">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                  <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
-                    {tx.type === "income" ? <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400" /> : <ArrowDownRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-400" />}
+                  <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === "income" ? "bg-success/10" : "bg-danger/10"}`}>
+                    {tx.type === "income" ? <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" /> : <ArrowDownRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-danger" />}
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs sm:text-sm font-medium truncate">{tx.description}</p>
@@ -1383,7 +1407,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-                <p className={`text-xs sm:text-sm font-semibold shrink-0 ${tx.type === "income" ? "text-emerald-400" : "text-red-400"}`}>
+                <p className={`text-xs sm:text-sm font-semibold shrink-0 ${tx.type === "income" ? "text-success" : "text-danger"}`}>
                   {tx.type === "income" ? "+" : "-"}{formatCurrency(parseFloat(tx.amount))}
                 </p>
               </div>

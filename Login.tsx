@@ -10,7 +10,7 @@ export default function Login() {
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#EE770E]/20 via-[#0D0D0D] to-[#0D0D0D]" />
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-[#EE770E]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-10 w-60 h-60 bg-[#EE770E]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-10 w-60 h-60 bg-[#EBEDAE]/10 rounded-full blur-3xl" />
         
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
@@ -42,8 +42,8 @@ export default function Login() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-[#EE770E]/10 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-[#EE770E]" />
+                <div className="h-10 w-10 rounded-lg bg-[#EBEDAE]/10 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-[#EBEDAE]" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">Insights com IA</p>

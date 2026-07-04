@@ -40,6 +40,15 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-lime-brand: var(--lime-brand);
   --font-sans: 'Satoshi', system-ui, -apple-system, sans-serif;
 }
 
@@ -85,6 +94,18 @@
   --border: oklch(0.88 0.01 55);
   --input: oklch(0.88 0.01 55);
   --ring: oklch(0.68 0.17 55);
+
+  /* Semantic finance colors — legible on light background */
+  --success: oklch(0.55 0.13 160);
+  --success-foreground: oklch(0.98 0 0);
+  --danger: oklch(0.55 0.20 25);
+  --danger-foreground: oklch(0.98 0 0);
+  --warning: oklch(0.60 0.14 70);
+  --warning-foreground: oklch(0.98 0 0);
+  --info: oklch(0.55 0.16 250);
+  --info-foreground: oklch(0.98 0 0);
+  /* Verde lima Eugê (#EBEDAE) — use as bg/accent, never as text */
+  --lime-brand: oklch(0.93 0.06 110);
   --sidebar: oklch(0.96 0.003 55);
   --sidebar-foreground: oklch(0.25 0.01 55);
   --sidebar-accent: oklch(0.92 0.008 55);
@@ -115,6 +136,17 @@
   --border: oklch(0.25 0.01 55);
   --input: oklch(0.22 0.01 55);
   --ring: oklch(0.68 0.17 55);
+
+  /* Semantic finance colors — brighter for dark background */
+  --success: oklch(0.77 0.15 163);
+  --success-foreground: oklch(0.12 0 0);
+  --danger: oklch(0.70 0.19 22);
+  --danger-foreground: oklch(0.12 0 0);
+  --warning: oklch(0.83 0.16 84);
+  --warning-foreground: oklch(0.12 0 0);
+  --info: oklch(0.71 0.14 255);
+  --info-foreground: oklch(0.12 0 0);
+  --lime-brand: oklch(0.93 0.06 110);
   --chart-1: oklch(0.68 0.17 55);
   --chart-2: oklch(0.88 0.08 110);
   --chart-3: oklch(0.55 0.12 55);
@@ -135,6 +167,36 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+    /* Aligned digits everywhere — essential in a finance app */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 30%, transparent);
+  }
+
+  /* Thin, theme-aware scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+    background-clip: content-box;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -291,5 +353,40 @@
   to {
     opacity: 0;
     transform: scale(0.97) translateY(2px);
+  }
+}
+
+/* ===== RECHARTS — THEME-AWARE =====
+   Overrides the hardcoded fills/strokes so charts stay legible
+   in both light and dark themes. */
+.recharts-cartesian-axis-tick text {
+  fill: var(--muted-foreground);
+}
+.recharts-cartesian-grid line {
+  stroke: var(--border);
+  opacity: 0.5;
+}
+.recharts-legend-item-text {
+  color: var(--muted-foreground) !important;
+}
+.recharts-default-tooltip {
+  background-color: var(--popover) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--popover-foreground) !important;
+}
+.recharts-tooltip-label {
+  color: var(--popover-foreground) !important;
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

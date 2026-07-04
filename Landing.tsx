@@ -197,6 +197,49 @@ export default function Landing() {
           <p className="text-sm text-white/40 mt-4">
             Sem cartão de crédito. Cancele quando quiser.
           </p>
+
+          {/* Product preview — CSS-only dashboard mockup */}
+          <div className="relative mt-16 mx-auto max-w-3xl">
+            <div className="absolute -inset-x-8 -top-8 h-40 bg-[#EE770E]/10 blur-3xl rounded-full pointer-events-none" />
+            <div className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-transparent p-2 shadow-2xl shadow-black/50">
+              <div className="rounded-xl border border-white/5 bg-[#111111] p-4 sm:p-6 text-left">
+                <div className="flex items-center gap-1.5 mb-5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+                  <span className="ml-3 text-[10px] text-white/30 tracking-widest uppercase">Dashboard — visão do mês</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
+                  <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-white/40">Receitas</p>
+                    <p className="text-sm sm:text-lg font-bold text-emerald-400">R$ 18.450</p>
+                  </div>
+                  <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-white/40">Despesas</p>
+                    <p className="text-sm sm:text-lg font-bold text-red-400">R$ 6.120</p>
+                  </div>
+                  <div className="rounded-lg border border-[#EE770E]/20 bg-[#EE770E]/5 p-3">
+                    <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-white/40">Saldo</p>
+                    <p className="text-sm sm:text-lg font-bold text-[#EE770E]">R$ 12.330</p>
+                  </div>
+                </div>
+                <div className="flex items-end gap-1.5 sm:gap-2 h-24" aria-hidden="true">
+                  {[35, 55, 40, 70, 52, 80, 64, 90, 74, 100, 68, 84].map((h, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-t-sm bg-gradient-to-t from-[#EE770E]/50 to-[#EE770E]"
+                      style={{ height: `${h}%`, opacity: 0.35 + h / 200 }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2 flex justify-between text-[8px] sm:text-[9px] text-white/25 uppercase tracking-wider" aria-hidden="true">
+                  {["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"].map(m => (
+                    <span key={m}>{m}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -208,7 +251,7 @@ export default function Landing() {
             <div className="text-sm text-white/50">Dados isolados por usuário</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-[#EE770E]">24/7</div>
+            <div className="text-2xl font-bold text-[#EBEDAE]">24/7</div>
             <div className="text-sm text-white/50">Acesso de qualquer lugar</div>
           </div>
           <div>
@@ -355,9 +398,14 @@ export default function Landing() {
             <span className="text-sm font-bold">EUGÊ<span className="text-[#EE770E]">.</span></span>
             <span className="text-[9px] text-white/30 tracking-widest uppercase">financeiro</span>
           </div>
-          <p className="text-xs text-white/30">
-            © {new Date().getFullYear()} Eugê Financeiro. Todos os direitos reservados.
-          </p>
+          <div className="flex items-center gap-4">
+            <a href="/legal" className="text-xs text-white/30 hover:text-white/60 transition-colors">
+              Termos & Privacidade
+            </a>
+            <p className="text-xs text-white/30">
+              © {new Date().getFullYear()} Eugê Financeiro. Todos os direitos reservados.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
