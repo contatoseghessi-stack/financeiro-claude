@@ -1,0 +1,21 @@
+# Arquivos pesados / mídia (manual da marca, screenshots, ícones)
+*.pdf
+*.PDF
+*.png
+*.PNG
+*.jpg
+*.jpeg
+*.docx
+
+# Dados de clientes reais — nunca versionar
+persone-house-data.md
+isa-job-backup.json
+
+# Ambiente / ferramentas
+.claude/
+.manus-logs/
+node_modules/
+dist/
+.env
+.env.*
+.DS_Store

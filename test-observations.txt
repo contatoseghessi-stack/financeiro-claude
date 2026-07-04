@@ -1,0 +1,12 @@
+CONFIRMED - June 2026 shows job payment in projections!
+
+June 2026 dashboard:
+- Title: "Junho de 2026" with "Projeção baseada em recorrências e jobs" ✓
+- Banner: "Projeção de receitas - Receitas previstas: R$ 31.800,00 (Recorrências: R$ 31.000,00) (Jobs: R$ 800,00)" ✓
+- RECEITAS (PREVISTO): R$ 31.800,00 ✓ (31k recorrências + 800 do job)
+- SALDO (PREVISTO): R$ 31.800,00 ✓
+
+May 2026 (no job payment due):
+- Receitas previstas: R$ 31.000,00 (Recorrências: R$ 31.000,00) - no Jobs shown ✓
+
+Everything working as expected!

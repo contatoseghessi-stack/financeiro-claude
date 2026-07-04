@@ -1,0 +1,3 @@
+Dashboard screenshot captured: dark theme working, sidebar with all pages, summary cards showing R$0,00, charts placeholder visible.
+All pages rendering correctly: Dashboard, Transações, Cartões, Categorias, Impostos, Telegram.
+TypeScript: No errors. LSP: No errors.

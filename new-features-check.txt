@@ -1,0 +1,19 @@
+Fluxo de Caixa: OK
+- KPI cards: Saldo Atual R$18.300, Saldo 12 Meses R$43.600, Receita Total R$65.400, Saldo Mínimo R$18.300
+- Gráfico de saldo acumulado: curva crescente de 15k a 60k
+- Gráfico barras receitas vs despesas: verde/vermelho
+- Tabela detalhamento: 12 meses com valores corretos
+- Sidebar: todos os novos itens aparecendo (Fluxo de Caixa, DRE, Orçamentos, Rentabilidade)
+
+DRE: OK
+- DRE Abr 2026: Receita Bruta R$8.200, Custos Diretos R$0, Lucro Bruto R$8.200, Despesas Fixas R$2.900, Desp Variáveis R$2.000, Lucro Líquido R$3.300 (40.2%)
+- Tabela resumo anual com 12 meses + total
+- Gráfico evolução mensal
+- Seletor de mês e ano funcionando
+
+Orçamentos: OK
+- Página com empty state, botão Novo Orçamento, filtros por status
+
+Rentabilidade: OK
+- KPI cards: Lucro Total, Margem Média, Mais Rentável, Menor Margem
+- Tabela com todos os jobs (dados de teste)

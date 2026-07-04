@@ -1,0 +1,26 @@
+ANALYSIS: Job Payments in Projected Balance
+
+Current flow:
+1. getRecurringProjections(year) in db.ts only considers recurringIncome (monthly/quarterly/etc contracts)
+2. It returns array of { month, type: 'income', total, isProjected: true }
+3. Frontend Home.tsx uses this for:
+   - currentMonthProjections: shows projected income for future months
+   - yearlyGrid: shows projected income bars in yearly view
+   - displayIncome: for future months, shows projected income instead of actual
+
+Problem:
+- Job payments (jobPayments table) with status='pending' and a dueDate in a future month are NOT included
+- Example: Job created today with payment due 30/06 (D+60) should show as projected income in June
+
+Solution:
+1. Create new function getPendingJobPaymentsProjections(year) in db.ts
+   - Query all jobPayments where status='pending' and dueDate falls within the year
+   - Group by month, sum amounts
+   - Return same format as getRecurringProjections
+
+2. Modify getRecurringProjections to also include job payment projections
+   OR create a combined function that merges both
+
+3. Frontend already handles projections correctly - just needs the data to include job payments
+
+Best approach: Modify getRecurringProjections to also query pending job payments and include them in the projections array.

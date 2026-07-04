@@ -1,0 +1,186 @@
+# Roadmap de prompts para a Manus — de MVP para produto
+
+Use na ordem. **Não avance de fase sem verificar a anterior.** A IA quase
+sempre responde "feito" — o seu trabalho é provar que ficou feito, principalmente
+o isolamento de dados (Fase 1). Num app financeiro, vazar dado de um cliente pro
+outro é fatal.
+
+Cada bloco tem: **PROMPT** (o que colar na Manus) e **VERIFICAR** (como conferir).
+
+---
+
+## ⚠️ Regra de ouro (vale pra tudo)
+
+Antes de abrir o app pra qualquer pessoa de fora, faça o teste de isolamento:
+crie 2 contas (A e B), cadastre dados em cada uma, e confirme que A **nunca**
+enxerga nada de B — nem na tela, nem trocando IDs na URL, nem em janela anônima.
+Se A vir qualquer coisa de B, o produto não pode ir ao ar.
+
+---
+
+## Fase 0 — Travar agora (antes de qualquer outra coisa)
+
+Hoje qualquer pessoa logada lê e escreve TODOS os dados, e operações de
+"limpar tudo" estão abertas. Tranca isso primeiro pra você trabalhar protegido.
+
+**PROMPT:**
+> Crie um `ownerProcedure` no tRPC que só permita acesso se o usuário autenticado
+> for o dono (compare o openId do `ctx.user` com o OWNER_OPEN_ID do ambiente, ou
+> role === 'admin'). Aplique esse procedure em TODAS as rotas de dados financeiros
+> e em todas as rotas de `settings` (clearAllData, clearTransactions, clearJobs,
+> clearRecurrences, clearCategoryLearning). Nenhuma rota de dados pode continuar
+> usando só `protectedProcedure`. As operações destrutivas devem exigir confirmação
+> explícita do usuário.
+
+**VERIFICAR:** logado como dono, tudo funciona. Logado como outra conta, toda
+rota de dados retorna FORBIDDEN.
+
+---
+
+## Fase 1 — Multi-tenancy (a fundação do produto)
+
+Esta é a maior parte do trabalho. Nenhuma tabela tem dono hoje, e todas as
+funções do banco consultam global. Faça em 3 prompts separados.
+
+**PROMPT 1.1 — coluna de dono em tudo:**
+> Adicione uma coluna `userId` (FK para users.id) em todas as tabelas de dados:
+> transactions, cards, categories, jobs, jobDeliveries, jobCosts, jobPayments,
+> clients, suppliers, quotes, quoteItems, recurringIncome, recurringExpenses,
+> workDays, invoiceUploads, cardStatements, serviceInvoices, productInvoices,
+> emailReports, taxReminders, categoryLearning, telegramSessions. Gere a migração
+> Drizzle e um backfill que atribua todos os dados atuais ao meu usuário (dono).
+> Crie índice em `userId` em cada tabela.
+
+**PROMPT 1.2 — filtrar todas as queries:**
+> Reescreva TODAS as funções do `server/db.ts` para receber e filtrar por `userId`.
+> Toda leitura precisa de `where userId = ...`; toda escrita precisa gravar o
+> `userId`. Regra crítica: o `userId` vem SEMPRE do `ctx.user` na camada tRPC,
+> NUNCA de um campo enviado pelo cliente. Centralize esse filtro para não depender
+> de lembrar de um `where` em cada lugar.
+
+**PROMPT 1.3 — reports e ações sensíveis presas ao dono dos dados:**
+> Em `reports.generateMonthly/Annual/Job`, remova o e-mail como parâmetro livre:
+> envie sempre para o e-mail verificado do próprio usuário autenticado. Nenhum
+> usuário pode disparar relatório com dados de outro nem para e-mail arbitrário.
+
+**VERIFICAR (faça o teste de isolamento da Regra de Ouro):** conta A cria uma
+transação; conta B não vê. Tente acessar `/jobs/:id` de A estando logado como B —
+deve dar erro/vazio. Faça isso para transações, jobs, clientes e orçamentos.
+
+---
+
+## Fase 2 — Onboarding e dados por usuário
+
+Hoje os "3 cartões", as categorias padrão e o e-mail `contatoseghessi@gmail.com`
+são fixos pra você. Cada novo cliente precisa começar limpo.
+
+**PROMPT:**
+> No cadastro de um novo usuário, crie automaticamente as categorias padrão e
+> (opcionalmente) cartões iniciais vinculados a esse `userId`. Remova qualquer
+> e-mail, cartão ou dado fixo no código (ex.: contatoseghessi@gmail.com). Crie um
+> fluxo de onboarding: ao entrar pela primeira vez, o usuário define seus próprios
+> cartões, regime tributário (PJ/Simples) e preferências. Garanta tela de
+> cadastro self-serve com verificação de e-mail.
+
+**VERIFICAR:** crie uma conta nova do zero e confirme que ela nasce sem nenhum
+dado seu e consegue se configurar sozinha.
+
+---
+
+## Fase 3 — Cobrança (billing)
+
+Sem isto não é produto, é favor. A Manus tem Stripe integrado; no Brasil avalie
+também Asaas/Pagar.me por causa de Pix e boleto.
+
+**PROMPT:**
+> Adicione assinatura recorrente com Stripe (sandbox primeiro). Crie planos
+> (ex.: Free/Pro), período de trial, página de checkout, portal do cliente e
+> webhook que atualiza o status da assinatura. Bloqueie o acesso às telas pagas
+> quando a assinatura estiver inadimplente ou expirada. Modele e aplique uma
+> COTA de uso de IA por plano (leitura de fatura por LLM tem custo): conte as
+> chamadas por usuário/mês e bloqueie ao estourar a cota do plano.
+
+**VERIFICAR:** assine no sandbox, cancele, e confirme que o acesso bloqueia.
+Estoure a cota de IA e confirme o bloqueio.
+
+---
+
+## Fase 4 — Telegram por usuário (hoje é um buraco de segurança)
+
+O webhook não valida o secret do Telegram, o `/api/telegram/setup` é público, e
+não há vínculo de chat com conta — qualquer um que achar o bot vê/edita finanças.
+
+**PROMPT:**
+> 1) No setWebhook, configure um `secret_token` e valide o header
+> `X-Telegram-Bot-Api-Secret-Token` em toda requisição do webhook; rejeite se não
+> bater. 2) Remova ou proteja o endpoint `/api/telegram/setup` (não pode ser
+> público). 3) Implemente vínculo de conta: o usuário gera um código único no app
+> e envia ao bot para ligar o `chatId` à conta dele. 4) Antes de qualquer comando,
+> o bot identifica o `userId` pelo `chatId`; se não estiver vinculado, recusa.
+> Toda ação do bot opera só nos dados daquele usuário.
+
+**VERIFICAR:** mande um POST falso no webhook sem o secret — deve ser rejeitado.
+Fale com o bot de um chat não vinculado — deve recusar.
+
+---
+
+## Fase 5 — Segurança transversal
+
+**PROMPT:**
+> Adicione `helmet`, CORS com allowlist de origens, e rate limiting nas rotas
+> `/api/trpc`, `/api/telegram/*` e nos endpoints de upload/IA. Troque o `state` do
+> OAuth por um nonce aleatório guardado em cookie e validado no callback (hoje é
+> só base64 do redirectUri, sem proteção CSRF). Avalie `sameSite: "lax"` no cookie
+> de sessão se não houver embed cross-site. Padronize a validação de valores
+> monetários: aplique a mesma regex de `quoteItems` (`^\d+(\.\d{1,2})?$`) ao
+> `amount` das transações.
+
+**VERIFICAR:** confirme cabeçalhos do helmet na resposta; dispare muitas
+requisições e veja o rate limit agir.
+
+---
+
+## Fase 6 — Performance e UX
+
+**PROMPT:**
+> Configure o QueryClient do React Query com `staleTime` (~30–60s) e desligue
+> refetch agressivo no foco de janela. Aplique code-splitting com `React.lazy` +
+> `Suspense` por rota (todas as páginas são importadas estaticamente hoje; a Home
+> tem ~52KB). Crie um endpoint único de dashboard que devolva os agregados de uma
+> vez, em vez de a Home disparar ~21 queries. Confirme que existem índices em
+> transactions (date, scope, type, categoryId, cardId).
+
+**PROMPT (export/LGPD):**
+> Adicione exportação dos dados do usuário em CSV/JSON e exclusão de conta que
+> apaga de fato todos os dados daquele `userId`. Crie política de privacidade e
+> termos de uso acessíveis no app.
+
+**VERIFICAR:** tempo de carregamento da Home melhora; exportar gera arquivo só
+com os dados do usuário; excluir conta remove tudo dele.
+
+---
+
+## Checklist final antes de cobrar do primeiro cliente
+
+- [ ] Teste de isolamento passou (A nunca vê B)
+- [ ] Operações destrutivas presas ao dono + confirmação
+- [ ] Telegram exige secret + vínculo de conta
+- [ ] Billing funciona (assina, cancela, bloqueia inadimplente)
+- [ ] Cota de IA por plano funcionando
+- [ ] Onboarding cria conta limpa, sem dados seus
+- [ ] helmet + CORS + rate limit ativos
+- [ ] Export e exclusão de conta (LGPD) funcionando
+- [ ] Política de privacidade e termos publicados
+- [ ] **Plano B de plataforma**: confirmar com a Manus se apps hospedados
+      continuam (e por quanto tempo) após a virada pra Meta; manter o código
+      exportado e versionado no GitHub pra poder migrar se precisar
+
+---
+
+### Observação importante sobre depender da Manus para isto
+
+A parte mais perigosa (isolamento de dados da Fase 1) é exatamente onde
+construtores de IA mais falham. Se você não tem um dev revisando, capriche nos
+testes de isolamento e, se possível, peça uma revisão humana de segurança antes
+de aceitar dados financeiros reais de terceiros. É barato comparado ao custo de
+um vazamento.

@@ -1,0 +1,13 @@
+Dashboard observations:
+- April 2026: RECEITAS R$14.000,00 / DESPESAS R$5.500,00 / SALDO R$8.500,00 - CORRECT (includes recurring + manual)
+- May 2026: RECEITAS (PREVISTO) R$11.000,00 / DESPESAS (PREVISTO) R$0,00 / SALDO R$11.000,00
+  - BUG: Despesas shows R$0,00 but DB has R$3.500,00 in recurring expenses for May
+  - The "Projeção de receitas" banner shows R$11.000,00 (Recorrências: R$11.000,00) - correct
+  - PJ vs PF shows R$3.500,00 for PJ - this seems to include the expenses!
+  - But the DESPESAS card shows R$0,00
+
+Key finding: The PJ vs PF card shows R$3.500,00 which is the correct expense amount.
+But the DESPESAS (PREVISTO) card shows R$0,00.
+
+This means the projections endpoint might be only returning income projections, not expense projections.
+Or the dashboard summary for future months is filtering differently.

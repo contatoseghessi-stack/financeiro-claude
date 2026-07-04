@@ -1,0 +1,13 @@
+ISSUE FOUND: The public proposal page is using the DARK theme from the app's ThemeProvider.
+The page has dark cards (black background) which makes it look unprofessional for a client-facing page.
+The text is barely visible (dark gray on dark background).
+
+FIX NEEDED: The PublicProposal page should ALWAYS use light theme regardless of the user's preference,
+since it's a public-facing page for clients who aren't app users.
+
+The page uses:
+- bg-gradient-to-br from-slate-50 to-slate-100 (light background - GOOD)
+- But Card components inherit the dark theme colors (bg-card which is dark)
+- Text colors like text-gray-800 are correct for light mode but get overridden by dark theme
+
+Solution: Force light theme on the PublicProposal page, or use explicit light colors that don't depend on CSS variables.

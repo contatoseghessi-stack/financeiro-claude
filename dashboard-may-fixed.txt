@@ -1,0 +1,7 @@
+Dashboard May 2026 - FIXED:
+- RECEITAS (PREVISTO): R$ 11.000,00 - CORRECT
+- DESPESAS (PREVISTO): R$ 3.500,00 - CORRECT (was R$ 0,00 before fix)
+- SALDO (PREVISTO): R$ 7.500,00 - CORRECT (11000 - 3500)
+- PJ vs PF: R$ 3.500,00 / R$ 0,00 - CORRECT
+- Banner: "Projeção do mês - Receitas previstas: R$ 11.000,00 (Recorrências: R$ 11.000,00) • Despesas previstas: R$ 3.500,00"
+- All working correctly now!

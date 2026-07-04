@@ -1,0 +1,295 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: 'Satoshi', system-ui, -apple-system, sans-serif;
+}
+
+/* ===== EUGÊ BRAND PALETTE =====
+   Preto:      #0D0D0D
+   Laranja:    #EE770E  (primary / accent)
+   Verde Lima: #EBEDAE  (secondary highlight)
+   Off-white:  #F0EEEB
+   Branco:     #FFFFFF
+   =============================== */
+
+:root {
+  /* Primary = Laranja Eugê */
+  --primary: oklch(0.68 0.17 55);
+  --primary-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.68 0.17 55);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+
+  /* Charts with Eugê palette */
+  --chart-1: oklch(0.68 0.17 55);
+  --chart-2: oklch(0.55 0.12 140);
+  --chart-3: oklch(0.50 0.15 55);
+  --chart-4: oklch(0.60 0.10 110);
+  --chart-5: oklch(0.45 0.08 55);
+
+  --radius: 0.625rem;
+
+  /* Light theme (default when .dark is not applied) */
+  --background: oklch(0.98 0.002 55);
+  --foreground: oklch(0.15 0.01 55);
+  --card: oklch(1.00 0 0);
+  --card-foreground: oklch(0.15 0.01 55);
+  --popover: oklch(1.00 0 0);
+  --popover-foreground: oklch(0.15 0.01 55);
+  --secondary: oklch(0.94 0.005 55);
+  --secondary-foreground: oklch(0.25 0.01 55);
+  --muted: oklch(0.94 0.005 55);
+  --muted-foreground: oklch(0.50 0.015 55);
+  --accent: oklch(0.94 0.008 55);
+  --accent-foreground: oklch(0.25 0.01 55);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.88 0.01 55);
+  --input: oklch(0.88 0.01 55);
+  --ring: oklch(0.68 0.17 55);
+  --sidebar: oklch(0.96 0.003 55);
+  --sidebar-foreground: oklch(0.25 0.01 55);
+  --sidebar-accent: oklch(0.92 0.008 55);
+  --sidebar-accent-foreground: oklch(0.20 0.01 55);
+  --sidebar-border: oklch(0.88 0.01 55);
+  --sidebar-ring: oklch(0.68 0.17 55);
+}
+
+.dark {
+  --primary: oklch(0.68 0.17 55);
+  --primary-foreground: oklch(0.08 0 0);
+  --sidebar-primary: oklch(0.68 0.17 55);
+  --sidebar-primary-foreground: oklch(0.08 0 0);
+  --background: oklch(0.10 0.005 55);
+  --foreground: oklch(0.93 0.005 55);
+  --card: oklch(0.15 0.008 55);
+  --card-foreground: oklch(0.93 0.005 55);
+  --popover: oklch(0.17 0.008 55);
+  --popover-foreground: oklch(0.93 0.005 55);
+  --secondary: oklch(0.20 0.01 55);
+  --secondary-foreground: oklch(0.88 0.005 55);
+  --muted: oklch(0.20 0.008 55);
+  --muted-foreground: oklch(0.60 0.015 55);
+  --accent: oklch(0.22 0.012 55);
+  --accent-foreground: oklch(0.93 0.005 55);
+  --destructive: oklch(0.60 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.25 0.01 55);
+  --input: oklch(0.22 0.01 55);
+  --ring: oklch(0.68 0.17 55);
+  --chart-1: oklch(0.68 0.17 55);
+  --chart-2: oklch(0.88 0.08 110);
+  --chart-3: oklch(0.55 0.12 55);
+  --chart-4: oklch(0.75 0.10 110);
+  --chart-5: oklch(0.50 0.08 55);
+  --sidebar: oklch(0.12 0.006 55);
+  --sidebar-foreground: oklch(0.88 0.005 55);
+  --sidebar-accent: oklch(0.20 0.01 55);
+  --sidebar-accent-foreground: oklch(0.93 0.005 55);
+  --sidebar-border: oklch(0.25 0.01 55);
+  --sidebar-ring: oklch(0.68 0.17 55);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+}
+
+/* ===== MICROINTERACTIONS & ANIMATIONS ===== */
+
+@layer utilities {
+  /* Card hover: subtle lift + glow */
+  .card-hover {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px oklch(0 0 0 / 0.15),
+                0 4px 10px -5px oklch(0 0 0 / 0.1);
+  }
+  .dark .card-hover:hover {
+    box-shadow: 0 8px 25px -5px oklch(0.68 0.17 55 / 0.08),
+                0 4px 10px -5px oklch(0 0 0 / 0.3);
+  }
+  .card-hover:active {
+    transform: translateY(0px) scale(0.99);
+  }
+
+  /* Button press effect */
+  .btn-press {
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-press:active {
+    transform: scale(0.95);
+  }
+
+  /* Smooth fade in */
+  .fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  /* Slide up fade in */
+  .slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+
+  /* Pulse glow for primary elements */
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 oklch(0.68 0.17 55 / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px oklch(0.68 0.17 55 / 0.15);
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+@layer base {
+  [data-slot="card"] {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.2s ease;
+  }
+
+  /* Dialog/modal animations */
+  [data-state="open"][role="dialog"],
+  [data-state="open"][data-radix-popper-content-wrapper] {
+    animation: dialogIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-state="closed"][role="dialog"] {
+    animation: dialogOut 0.15s ease-in;
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes dialogOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97) translateY(2px);
+  }
+}
